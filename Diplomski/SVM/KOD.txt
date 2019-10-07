@@ -1,0 +1,70 @@
+import numpy as np
+import pandas as pd
+from sklearn                        import metrics, svm
+from sklearn.linear_model           import LinearRegression
+from sklearn.linear_model           import LogisticRegression
+from sklearn.tree                   import DecisionTreeClassifier
+from sklearn.neighbors              import KNeighborsClassifier
+from sklearn.discriminant_analysis  import LinearDiscriminantAnalysis
+from sklearn.naive_bayes            import GaussianNB
+from sklearn.svm                    import SVC
+from sklearn.model_selection        import train_test_split
+from sklearn                        import preprocessing
+from sklearn.metrics                import confusion_matrix, classification_report
+
+
+earthquake= pd.read_csv('database.csv')
+
+earthquake.drop(['ID'],1, inplace=True)
+earthquake.drop(['Source'],1, inplace=True)
+earthquake.drop(['Magnitude Source'],1, inplace=True)
+earthquake.drop(['Status'],1, inplace=True)
+earthquake.drop(['Type'],1, inplace=True)
+
+earthquake=earthquake.replace(np.NaN,0)
+
+earthquake1=earthquake
+earthquake1.drop(['Date'],1, inplace=True)
+earthquake1.drop(['Time'],1, inplace=True)
+earthquake1.drop(['Location Source'],1, inplace=True)
+earthquake1.drop(['Magnitude Type'],1, inplace=True)
+
+
+
+X=earthquake1.drop(columns=['Horizontal Error'])
+y=earthquake1['Horizontal Error']
+
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2)
+
+lab_enc = preprocessing.LabelEncoder()
+y_train_encoded = lab_enc.fit_transform(y_train)
+
+lab_enc = preprocessing.LabelEncoder()
+y_test_encoded = lab_enc.fit_transform(y_test)
+
+
+clf = svm.SVC(kernel="linear")
+clf.fit(X_train,y_train_encoded)
+print("SVC trening podaci predikcija")
+print(clf.predict(X_train))
+class_train_predicted = clf.predict(X_train)
+
+print("SVC test podaci predikcija")
+print(clf.predict(X_test))
+class_test_predicted = clf.predict(X_test)
+
+print("Preciznost treninga")
+train_acc = clf.score(X_train,y_train_encoded)
+print (train_acc)
+
+print("Preciznost testa")
+test_acc = clf.score(X_test,y_test_encoded)
+print(test_acc)
+
+print("Izracunavamo matricu konfuzije za trening podatke")
+train_conf = confusion_matrix(y_train_encoded, class_train_predicted)
+print(train_conf)
+
+print("Izracunavamo matricu konfuzije za trening podatke")
+test_conf = confusion_matrix(y_test_encoded, class_test_predicted)
+print(test_conf)
